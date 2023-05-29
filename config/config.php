@@ -8,33 +8,33 @@ $CONFIG = [
     'BEARER_TOKEN' =>  ["Bearer YWRtaW46YWRtaW4="], # default: "Bearer YWRtaW46YWRtaW4="
 
     /** If you want disable the upload on your ShareX server.
-     * Replace the value of "UPLOADER_ENABLE" variable.
+     * Replace the value of "UPLOAD_ENABLE" variable.
      * true => The server is enabled
      * false => The server is disabled
      * If other value is set, the server will be disabled.
      **/
-    'UPLOADER_ENABLE' => true, # default: true
+    'UPLOAD_ENABLE' => true, # default: true
 
     /**
-     * If you want disable the viewer of image uploaded.
-     * Replace the value of "VIEWER_ENABLE" variable.
-     * true => The viewer is enabled
-     * false => The viewer is disabled
-     * If other value is set, the viewer will be disabled.
+     * If you want disable the view system of image uploaded.
+     * Replace the value of "VIEW_ENABLE" variable.
+     * true => The view system is enabled
+     * false => The view system is disabled
+     * If other value is set, the view system will be disabled.
      **/
-    'VIEWER_ENABLE' => true, # default: true
+    'VIEW_ENABLE' => true, # default: true
 
     /**
      * The base folder where the files will be uploaded.
      * WARNING / after the folder name is required.
      **/
-    'UPLOAD_DIR' => "files/", # default: "files/"
+    'UPLOAD_DIR' => "../files/", # default: "../files/"
 
     /**
      * The base URL where the files will be uploaded.
      * WARNING / after the folder url is required.
      **/
-    'BASE_UPLOAD_URL' => "https://{$_SERVER['SERVER_NAME']}/", # default: "https://{$_SERVER['SERVER_NAME']}"
+    'BASE_URL' => "http://{$_SERVER['SERVER_NAME']}/", # default: "https://{$_SERVER['SERVER_NAME']}"
 
     /**
      * The length of the random string that will be generated.
@@ -43,6 +43,7 @@ $CONFIG = [
 
     /**
      * The characters that will be used to generate the random string.
+     * WARNING: Addinc char: . or / or \ or % can be cause a LFI (Local File Inclusion) vulnerability.
      **/
     'ALL_USABLE_CHARS' => "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", # default: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
