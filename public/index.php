@@ -11,14 +11,19 @@ router('GET', '^/', function() {
         showWelcome();
     } else {
         // check if the are / in the name. SORRY FOR THE UGLY PART, i'm looking for a better way to do this
-        if (strpos($name, '/') !== false) {
+        if (!function_exists('str_contains')) {
+            function str_contains($haystack, $needle) {
+                return $needle !== '' && mb_strpos($haystack, $needle) !== false;
+            }
+        }
+        if (str_contains($name, '/')) {
             // there are / in the name
             $name = explode('/', $name);
             $name = $name[0];
             if ($name == 'delete') {
                 header('Content-Type: application/json');
                 header("{$_SERVER['SERVER_PROTOCOL']} 501 Not Implemented");
-                echo json_encode(array('error' => 'Delete not implemented'));
+                echo json_encode(array('success' => false, 'error' => 'Delete not implemented'));
             } else {
                 $LFIProtectTrigger = detectLFI($name);
                 if ($LFIProtectTrigger) {

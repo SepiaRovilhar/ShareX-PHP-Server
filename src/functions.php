@@ -129,7 +129,12 @@ function postMain(): void
 function detectLFI($fileName): bool
 {
     $CONFIG = returnConfig();
-
+    if (!function_exists('str_contains')) {
+        function str_contains($haystack, $needle)
+        {
+            return $needle !== '' && mb_strpos($haystack, $needle) !== false;
+        }
+    }
     if (str_contains($fileName, '..') || str_contains($fileName, '/') || str_contains($fileName, '\\') || str_contains($fileName, '%')) {
         return true;
     }
