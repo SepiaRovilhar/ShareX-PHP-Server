@@ -11,15 +11,12 @@ function generateRandomString($length, $authorisedChar): string
     return $str;
 }
 
-function main($FILE_TO_UPLOAD): array
+function upload($FILE_TO_UPLOAD): array
 {
     /**
-     * $FILE_TO_UPLOAD is the file to upload
-     * 200 --> success
-     * 415 --> Unsupported Media Type
-     * 413 --> Request Entity Too Large
-     * 400 --> Bad Request
-     * 500 --> Internal Server Error
+     * Upload file to the server
+     * @param array $FILE_TO_UPLOAD
+     * @return array
      */
     $CONFIG = returnConfig();
     $FILE_EXTENSION = pathinfo($FILE_TO_UPLOAD['name'], PATHINFO_EXTENSION);

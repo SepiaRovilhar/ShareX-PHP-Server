@@ -7,7 +7,7 @@ ShareX Server is an open-source web application for uploading and sharing images
 - View images, music, videos and text
 
 ## Requirements
-- PHP 7.4 or higher
+- PHP 7.2 or higher
 
 ## Installation
 1. Clone the repository
