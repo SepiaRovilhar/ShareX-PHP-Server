@@ -106,7 +106,6 @@ function postMain(): void
     $file = getPostFile();
     require_once __DIR__ . '/../upload/upload.php';
     $result = upload($file);
-
     if (!$result) {
         header("{$_SERVER['SERVER_PROTOCOL']} 500 Internal Server Error");
         echo json_encode(array('success' => false, 'error' => 'No data returned'));
@@ -114,12 +113,15 @@ function postMain(): void
     } else {
         $httpCode = $result[0];
         $httpMessage = $result[1];
-        $data = $result[2];
         header("{$_SERVER['SERVER_PROTOCOL']} $httpCode $httpMessage");
         if ($httpCode == 201) {
-            $fullUrl = $CONFIG['BASE_URL'] . $data;
-            echo json_encode(array('success' => true, 'data' => "$fullUrl"));
+            $fullName = $result[2];
+            $deleteKey = $result[3];
+            $fullUrlAcces = $CONFIG['BASE_URL'] . $fullName;
+            $fullUrlDelete = $CONFIG['BASE_URL'] . "delete/" . $deleteKey;
+            echo json_encode(array('success' => true, 'data' => "$fullUrlAcces", 'delete' => "$fullUrlDelete"));
         } else {
+            $data = $result[2];
             echo json_encode(array('success' => false, 'error' => "$data"));
         }
     }

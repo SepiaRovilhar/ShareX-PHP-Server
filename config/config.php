@@ -7,6 +7,21 @@ $CONFIG = [
      */
     'BEARER_TOKEN' =>  ["Bearer YWRtaW46YWRtaW4="], # default: "Bearer YWRtaW46YWRtaW4="
 
+    /**
+     * The database configuration.
+     * You can use by default sqlite
+     * If you want use mysql, you need to change type to mysql
+     * Only SQLite and MySQL are supported.
+     */
+    'DATABASE' => [
+        'type' => 'mysql', # default: 'sqlite'
+        'location' => './../database/database.sqlite', # default: '/../db/database.sqlite' (only for sqlite)
+        'host' => 'localhost', # default: 'localhost' (only for mysql)
+        'user' => 'root', # default: 'root' (only for mysql)
+        'password' => 'root', # default: 'root' (only for mysql)
+        'database' => 'sharex' # default: 'sharex' (only for mysql)
+    ],
+
     /** If you want disable the upload on your ShareX server.
      * Replace the value of "UPLOAD_ENABLE" variable.
      * true => The server is enabled

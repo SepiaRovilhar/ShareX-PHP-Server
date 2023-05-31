@@ -1,15 +1,6 @@
 <?php
 require_once(dirname(__FILE__) . '/../config/config.php');
-
-function generateRandomString($length, $authorisedChar): string
-{
-    $str = '';
-    // Generation of a random string
-    for ($i = 0; $i < $length; $i++) {
-        $str .= $authorisedChar[random_int(0, strlen($authorisedChar) - 1)];
-    }
-    return $str;
-}
+require_once (dirname(__FILE__) . '/functions.php');
 
 function upload($FILE_TO_UPLOAD): array
 {
@@ -71,24 +62,14 @@ function upload($FILE_TO_UPLOAD): array
         return [400, 'Bad Request', 'The file is corrupted'];
     }
 
-    # generate the random name
-    $length = $CONFIG['RANDOM_STRING_LENGTH'];
-    $usableChar = $CONFIG['ALL_USABLE_CHARS'];
-    $randomName = generateRandomString($length, $usableChar);
-    $i = 0;
-    # verify if the file already exist
-    $dirUpload = $CONFIG['UPLOAD_DIR'];
-    $fullPath = "../$dirUpload$randomName.$FILE_EXTENSION";
-    while (file_exists($fullPath)) {
-        # the file already exist
-        $randomName = generateRandomString($length, $usableChar);
-        $fullPath = "../$dirUpload/$randomName.$FILE_EXTENSION";
-        $i++;
-        if ($i > $CONFIG['MAX_TRY']) {
-            # the file already exist
-            return [500, 'Internal Server Error', "Too many try to generate a random name $fullPath"];
-        }
+    $data = uploadToDatabase();;
+    if ($data[0] !== 200) {
+        return [500, 'Internal Server Error', $data[2]];
     }
+    $randomName = $data[2];
+    $delete = $data[3];
+
+    $dirUpload = $CONFIG['UPLOAD_DIR'];
 
     # verify if the file is uploaded
     if (!is_uploaded_file($FILE_TO_UPLOAD['tmp_name'])) {
@@ -104,5 +85,5 @@ function upload($FILE_TO_UPLOAD): array
 
     $fullName = $randomName . '.' . $FILE_EXTENSION;
     # return the random name
-    return [201, 'Created', $fullName];
+    return [201, 'Created', $fullName, $delete];
 }
