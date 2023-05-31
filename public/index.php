@@ -25,23 +25,11 @@ router('GET', '^/', function() {
                 header("{$_SERVER['SERVER_PROTOCOL']} 501 Not Implemented");
                 echo json_encode(array('success' => false, 'error' => 'Delete not implemented'));
             } else {
-                $LFIProtectTrigger = detectLFI($name);
-                if ($LFIProtectTrigger) {
-                    header("{$_SERVER['SERVER_PROTOCOL']} 403 Forbidden");
-                    header('Content-Type: application/json');
-                    echo json_encode(array('success' => false, 'error' => 'Invalid char in file name'));
-                    exit;
-                }
-                getMain($name);
+                header("{$_SERVER['SERVER_PROTOCOL']} 400 Bad Request");
+                header('Content-Type: application/json');
+                echo json_encode(array('success' => false, 'error' => 'Invalid request method'));
             }
         } else {
-            $LFIProtectTrigger = detectLFI($name);
-            if ($LFIProtectTrigger) {
-                header("{$_SERVER['SERVER_PROTOCOL']} 403 Forbidden");
-                header('Content-Type: application/json');
-                echo json_encode(array('success' => false, 'error' => 'Invalid char in file name'));
-                exit;
-            }
             getMain($name);
         }
     }

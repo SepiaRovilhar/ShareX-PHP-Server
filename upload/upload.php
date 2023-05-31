@@ -11,9 +11,9 @@ function upload($FILE_TO_UPLOAD): array
      */
     $CONFIG = returnConfig();
     $FILE_EXTENSION = pathinfo($FILE_TO_UPLOAD['name'], PATHINFO_EXTENSION);
-    # verify if $CONFIG['UPLOAD_DIR'] exist
-    if (!file_exists($CONFIG['UPLOAD_DIR'])) {
-        # $CONFIG['UPLOAD_DIR'] does not exist
+    # verify if $CONFIG['UPLOAD_FOLDER'] exist
+    if (!file_exists($CONFIG['UPLOAD_FOLDER'])) {
+        # $CONFIG['UPLOAD_FOLDER'] does not exist
         return [500, 'Internal Server Error', 'The upload directory does not exist'];
     }
 
@@ -69,7 +69,7 @@ function upload($FILE_TO_UPLOAD): array
     $randomName = $data[2];
     $delete = $data[3];
 
-    $dirUpload = $CONFIG['UPLOAD_DIR'];
+    $dirUpload = $CONFIG['UPLOAD_FOLDER'];
 
     # verify if the file is uploaded
     if (!is_uploaded_file($FILE_TO_UPLOAD['tmp_name'])) {

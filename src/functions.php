@@ -128,32 +128,6 @@ function postMain(): void
     exit;
 }
 
-function detectLFI($fileName): bool
-{
-    $CONFIG = returnConfig();
-    if (!function_exists('str_contains')) {
-        function str_contains($haystack, $needle)
-        {
-            return $needle !== '' && mb_strpos($haystack, $needle) !== false;
-        }
-    }
-    if (str_contains($fileName, '..') || str_contains($fileName, '/') || str_contains($fileName, '\\') || str_contains($fileName, '%')) {
-        return true;
-    }
-    $allAcceptableChar = $CONFIG['ALL_USABLE_CHARS'];
-    $allAcceptableCharTab = str_split($allAcceptableChar);
-    // for each char in the file name
-    foreach (str_split($fileName) as $char) {
-        // if the char is not in the array of acceptable char
-        if($char === '.') {
-            continue;
-        }
-        if (!in_array($char, $allAcceptableCharTab)) {
-            return true;
-        }
-    }
-    return false;
-}
 function getMain($fileName) : void
 {
     /**
@@ -168,10 +142,10 @@ function getMain($fileName) : void
         echo json_encode(array('success' => false, 'error' => 'View is not enabled'));
         exit;
     }
-    detectLFI($fileName);
     require_once __DIR__ . '/../view/view.php';
-    $fullPath = $CONFIG['UPLOAD_DIR'] . $fileName;
-    view($fullPath);
+    $fileExtension = explode('.', $fileName)[1];
+    $fileName = explode('.', $fileName)[0];
+    view($fileName, $fileExtension);
 }
 
 function showWelcome(): void
