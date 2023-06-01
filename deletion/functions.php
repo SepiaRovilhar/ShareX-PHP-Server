@@ -46,44 +46,7 @@ function checkDatabaseSetup(): array
     }
 }
 
-function checkExist($fileName): array
-{
-    $CONFIG = returnConfig();
-    $databaseType = $CONFIG['DATABASE']['type'];
-    if ($databaseType === 'sqlite') {
-        $databaseLocation = $CONFIG['DATABASE']['location'];
-        $database = new SQLite3($databaseLocation);
-        $query = $database->query("SELECT * FROM files WHERE id='$fileName'");
-        $result = $query->fetchArray();
-
-        if ($result === false) {
-            return [404, 'Not Found', 'File not found'];
-        } else {
-            return [200, 'OK', 'The name is existing'];
-        }
-    } else if ($databaseType === 'mysql') {
-        $databaseHost = $CONFIG['DATABASE']['host'];
-        $databaseUser = $CONFIG['DATABASE']['user'];
-        $databasePassword = $CONFIG['DATABASE']['password'];
-        $databaseName = $CONFIG['DATABASE']['database'];
-        $database = new mysqli($databaseHost, $databaseUser, $databasePassword, $databaseName);
-        if ($database->connect_error) {
-            return [500, 'Internal Server', "The database connection failed: " . $database->connect_error];
-        }
-        $query = $database->query("SELECT * FROM files WHERE id='$fileName'");
-        $result = $query->fetch_array();
-        if ($result === null) {
-            return [404, 'Not Found', 'File not found'];
-        } else {
-            return [200, 'OK', 'The name is existing'];
-        }
-    }
-
-    return [500, 'Internal Server', "The database type $databaseType is not supported"];
-
-}
-
-function checkName($fileName): array
+function checkDeletion($fileName): array
 {
     $CONFIG = returnConfig();
     if (!function_exists('str_contains')) {
@@ -92,7 +55,7 @@ function checkName($fileName): array
             return $needle !== '' && mb_strpos($haystack, $needle) !== false;
         }
     }
-    if (str_contains($fileName, "'") || str_contains($fileName, '"') || str_contains($fileName, '.') ) {
+    if (str_contains($fileName, "'") || str_contains($fileName, '"') || str_contains($fileName, '.')) {
         return [400, 'Bad Request', 'Invalid file name'];
     }
 
@@ -107,30 +70,19 @@ function checkName($fileName): array
     return [200, 'OK', 'The file name is valid'];
 }
 
-function viewFromDatabase($fileName) : array
+function checkExist($deleter) : array
 {
-    $nameValid = checkName($fileName);
-    if ($nameValid[0] !== 200) {
-        return [$nameValid[0], $nameValid[1], $nameValid[2]];
-    }
-    $exitInDb = checkExist($fileName);
-    return [$exitInDb[0], $exitInDb[1], $exitInDb[2]];
-}
-
-function getExtensionFromDb($fileName){
     $CONFIG = returnConfig();
     $databaseType = $CONFIG['DATABASE']['type'];
     if ($databaseType === 'sqlite') {
         $databaseLocation = $CONFIG['DATABASE']['location'];
         $database = new SQLite3($databaseLocation);
-        $query = $database->query("SELECT * FROM files WHERE id='$fileName'");
+        $query = $database->query("SELECT * FROM files WHERE deleter='$deleter'");
         $result = $query->fetchArray();
-
         if ($result === false) {
-            return [404, 'Not Found', 'File not found'];
-        } else {
-            return [200, 'OK', $result['extension']];
+            return [404, 'Not Found', 'The file does not exist'];
         }
+        return [200, 'OK', 'The file exist'];
     } else if ($databaseType === 'mysql') {
         $databaseHost = $CONFIG['DATABASE']['host'];
         $databaseUser = $CONFIG['DATABASE']['user'];
@@ -140,15 +92,75 @@ function getExtensionFromDb($fileName){
         if ($database->connect_error) {
             return [500, 'Internal Server', "The database connection failed: " . $database->connect_error];
         }
-        $query = $database->query("SELECT * FROM files WHERE id='$fileName'");
+        $query = $database->query("SELECT * FROM files WHERE deleter='$deleter'");
         $result = $query->fetch_array();
-
         if ($result === null) {
-            return [404, 'Not Found', 'File not found'];
-        } else {
-            return [200, 'OK', $result['extension']];
+            return [404, 'Not Found', 'The file does not exist'];
         }
+        return [200, 'OK', 'The file exist'];
+    } else {
+        return [500, 'Internal Server', "The database type $databaseType is not supported"];
     }
+}
+function returnNameAndExtention($deleter) : array
+{
+    $CONFIG = returnConfig();
+    $databaseType = $CONFIG['DATABASE']['type'];
+    # with deleter='$deleter' get on the database the file name and extension from the database
+    if ($databaseType === 'sqlite') {
+        $databaseLocation = $CONFIG['DATABASE']['location'];
+        $database = new SQLite3($databaseLocation);
+        $query = $database->query("SELECT * FROM files WHERE deleter='$deleter'");
+        $result = $query->fetchArray();
+        if ($result === false) {
+            return [404, 'Not Found', 'The file does not exist'];
+        }
+        $fileName = $result['id'];
+        $extension = $result['extension'];
+        return [200, 'OK', $fileName, $extension];
+    } else if ($databaseType === 'mysql') {
+        $databaseHost = $CONFIG['DATABASE']['host'];
+        $databaseUser = $CONFIG['DATABASE']['user'];
+        $databasePassword = $CONFIG['DATABASE']['password'];
+        $databaseName = $CONFIG['DATABASE']['database'];
+        $database = new mysqli($databaseHost, $databaseUser, $databasePassword, $databaseName);
+        if ($database->connect_error) {
+            return [500, 'Internal Server', "The database connection failed: " . $database->connect_error];
+        }
+        $query = $database->query("SELECT * FROM files WHERE deleter='$deleter'");
+        $result = $query->fetch_array();
+        if ($result === null) {
+            return [404, 'Not Found', 'The file does not exist'];
+        }
+        $fileName = $result['id'];
+        $extension = $result['extension'];
+        return [200, 'OK', $fileName, $extension];
+    } else {
+        return [500, 'Internal Server', "The database type $databaseType is not supported"];
+    }
+}
 
-    return [500, 'Internal Server', "The database type $databaseType is not supported"];
+function deleteOnDatabase($deleter) : array
+{
+    $CONFIG = returnConfig();
+    $databaseType = $CONFIG['DATABASE']['type'];
+    if ($databaseType === 'sqlite') {
+        $databaseLocation = $CONFIG['DATABASE']['location'];
+        $database = new SQLite3($databaseLocation);
+        $database->query("DELETE FROM files WHERE deleter='$deleter'");
+        return [200, 'OK', 'The file has been deleted'];
+    } else if ($databaseType === 'mysql') {
+        $databaseHost = $CONFIG['DATABASE']['host'];
+        $databaseUser = $CONFIG['DATABASE']['user'];
+        $databasePassword = $CONFIG['DATABASE']['password'];
+        $databaseName = $CONFIG['DATABASE']['database'];
+        $database = new mysqli($databaseHost, $databaseUser, $databasePassword, $databaseName);
+        if ($database->connect_error) {
+            return [500, 'Internal Server', "The database connection failed: " . $database->connect_error];
+        }
+        $database->query("DELETE FROM files WHERE deleter='$deleter'");
+        return [200, 'OK', 'The file has been deleted'];
+    } else {
+        return [500, 'Internal Server', "The database type $databaseType is not supported"];
+    }
 }

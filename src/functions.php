@@ -1,4 +1,5 @@
 <?php
+# Note for harmonisation: The echo can only be to index.php, all return must only have [0], [1] and [2] as return. All return must be an array of type array('success' => false, 'error' => 'error message') or array('success' => true, 'data' => 'data')
 require_once __DIR__ . '/../config/config.php';
 function router($httpMethods, $route, $callback, $exit = true)
 {
@@ -148,6 +149,29 @@ function getMain($fileName) : void
     view($fileName, $fileExtension);
 }
 
+function getDeletion($fullName){
+    $deleteKey = explode('/', $fullName)[1];
+    $deleter =
+    require_once __DIR__ . '/../deletion/deletion.php';
+    $result = deletion($deleteKey);
+    if (!$result) {
+        header("{$_SERVER['SERVER_PROTOCOL']} 500 Internal Server Error");
+        echo json_encode(array('success' => false, 'error' => 'No data returned'));
+        exit;
+    } else {
+        $httpCode = $result[0];
+        $httpMessage = $result[1];
+        header("{$_SERVER['SERVER_PROTOCOL']} $httpCode $httpMessage");
+        header('Content-Type: application/json');
+        if ($httpCode === 200) {
+            $data = $result[2];
+            echo json_encode(array('success' => true, 'data' => "$data"));
+        } else {
+            $data = $result[2];
+            echo json_encode(array('success' => false, 'error' => "$data"));
+        }
+    }
+}
 function showWelcome(): void
 {
     /**

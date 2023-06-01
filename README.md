@@ -23,11 +23,12 @@ ShareX Server is an open-source web application for uploading and sharing images
 * On Headers put in name ``Authorization`` and in Value ``Bearer YOUR_TOKEN`` define on config.php
 * On File form name, you put ``file``
 * On URL form name, you put ``{json:data}``
+* On Deletion URL, you put ``{json:delete}``
 * On error message, you put ``{json:error}``
 * Now you can save your configuration and test it
 
 ## Usage
-- Acctualy, the server is made for running without specification of api.php on url. (for acces to a file use https://example.com/file.extention)
+- Acctualy, the server is made for running without specification of api.php on url. (for acces to a file use https://example.com/file)
 ## License
 [GNU GPLv3](https://choosealicense.com/licenses/gpl-3.0/)
 
@@ -36,7 +37,7 @@ ShareX Server is an open-source web application for uploading and sharing images
 - Discord: ``SepiaRovilhar#3003``
 
 ## Disclaimer
-- This project not contain admin panel, if you want to delete a file, you need to delete it manually on your server.
+- This project not contain admin panel, if you want to delete a file, you need to use URL given.
 - The project owner is not responsible for any illegal use of this project.
 - The project owner is not responsible for any damage caused by this project.
 - The project owner is not responsible for any damage caused by the use of this project.

@@ -18,12 +18,11 @@ router('GET', '^/', function() {
         }
         if (str_contains($name, '/')) {
             // there are / in the name
+            $namebackup = $name;
             $name = explode('/', $name);
             $name = $name[0];
             if ($name == 'delete') {
-                header('Content-Type: application/json');
-                header("{$_SERVER['SERVER_PROTOCOL']} 501 Not Implemented");
-                echo json_encode(array('success' => false, 'error' => 'Delete not implemented'));
+                getDeletion($namebackup);
             } else {
                 header("{$_SERVER['SERVER_PROTOCOL']} 400 Bad Request");
                 header('Content-Type: application/json');
