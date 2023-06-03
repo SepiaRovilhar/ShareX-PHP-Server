@@ -1,6 +1,7 @@
 <?php
+# Note for harmonisation: all return must only have [0], [1] and [2] as return. All return must be an array of type array('success' => false, 'error' => 'error message') or array('success' => true, 'data' => 'data')
 require_once __DIR__ . '/../config/config.php';
-function router($httpMethods, $route, $callback, $exit = true)
+function router($httpMethods, $route, $callback, $exit = true) : void
 {
     /**
      * The router function comes from dexit: https://gist.github.com/dexit/ef6fab604b84fa3c527d0ca6141ef613
@@ -44,7 +45,7 @@ function router($httpMethods, $route, $callback, $exit = true)
     }
 }
 
-function checkAuth(): void
+function checkAuth() : void
 {
     /**
      * Check if the request is authorized
@@ -52,18 +53,21 @@ function checkAuth(): void
      */
     $CONFIG = returnConfig();
     $authorisation = $CONFIG['BEARER_TOKEN'];
+    // Get all the headers
     $headers = getallheaders();
 
-    // Récupération de la clé d'authentification à partir de l'en-tête
+    // if Authorization is not set
     if (!isset($headers['Authorization'])) {
         header("{$_SERVER['SERVER_PROTOCOL']} 401 Unauthorized");
         header('Content-Type: application/json');
         echo json_encode(array('success' => false, 'error' => 'Unauthorized'));
         exit;
     }
+
+    // Get the Authorization key
     $authKey = $headers['Authorization'];
 
-    // if $authKey is in array of $authorisation
+    // if $authKey isn't in array of $authorisation
     if (!in_array($authKey, $authorisation)) {
         header("{$_SERVER['SERVER_PROTOCOL']} 401 Unauthorized");
         header('Content-Type: application/json');
@@ -78,6 +82,7 @@ function getPostFile()
      * Get the file from the POST request
      * @return array
      */
+    // Check if the file is existing
     if (!isset($_FILES["file"])) {
         header("{$_SERVER['SERVER_PROTOCOL']} 404 Not Found");
         header('Content-Type: application/json');
@@ -88,25 +93,29 @@ function getPostFile()
     }
 }
 
-function postMain(): void
+function postMain() : void
 {
     /**
      * Upload the file to the server
      * @return void
      */
-    // Check if the upload is activated
-    #header('Content-Type: application/json');
+    header('Content-Type: application/json');
+
     $CONFIG = returnConfig();
+    // Check if the upload is activated
     if(!$CONFIG['UPLOAD_ENABLE']) {
         header("{$_SERVER['SERVER_PROTOCOL']} 405 Method Not Allowed");
         echo json_encode(array('success' => false, 'error' => 'Upload is not enabled'));
         exit;
     }
+    // Check if the request is authorized
     checkAuth();
+    // Get the file from the POST request
     $file = getPostFile();
-    require_once __DIR__ . '/../upload/upload.php';
-    $result = upload($file);
 
+    require_once __DIR__ . '/../upload/upload.php';
+    // Upload the file
+    $result = upload($file);
     if (!$result) {
         header("{$_SERVER['SERVER_PROTOCOL']} 500 Internal Server Error");
         echo json_encode(array('success' => false, 'error' => 'No data returned'));
@@ -114,44 +123,21 @@ function postMain(): void
     } else {
         $httpCode = $result[0];
         $httpMessage = $result[1];
-        $data = $result[2];
         header("{$_SERVER['SERVER_PROTOCOL']} $httpCode $httpMessage");
         if ($httpCode == 201) {
-            $fullUrl = $CONFIG['BASE_URL'] . $data;
-            echo json_encode(array('success' => true, 'data' => "$fullUrl"));
+            $fullName = $result[2][0];
+            $deleteKey = $result[2][1];
+            $fullUrlAcces = $CONFIG['BASE_URL'] . $fullName;
+            $fullUrlDelete = $CONFIG['BASE_URL'] . "delete/" . $deleteKey;
+            echo json_encode(array('success' => true, 'data' => "$fullUrlAcces", 'delete' => "$fullUrlDelete"));
         } else {
+            $data = $result[2];
             echo json_encode(array('success' => false, 'error' => "$data"));
         }
     }
     exit;
 }
 
-function detectLFI($fileName): bool
-{
-    $CONFIG = returnConfig();
-    if (!function_exists('str_contains')) {
-        function str_contains($haystack, $needle)
-        {
-            return $needle !== '' && mb_strpos($haystack, $needle) !== false;
-        }
-    }
-    if (str_contains($fileName, '..') || str_contains($fileName, '/') || str_contains($fileName, '\\') || str_contains($fileName, '%')) {
-        return true;
-    }
-    $allAcceptableChar = $CONFIG['ALL_USABLE_CHARS'];
-    $allAcceptableCharTab = str_split($allAcceptableChar);
-    // for each char in the file name
-    foreach (str_split($fileName) as $char) {
-        // if the char is not in the array of acceptable char
-        if($char === '.') {
-            continue;
-        }
-        if (!in_array($char, $allAcceptableCharTab)) {
-            return true;
-        }
-    }
-    return false;
-}
 function getMain($fileName) : void
 {
     /**
@@ -160,19 +146,79 @@ function getMain($fileName) : void
      * @return void
      */
     $CONFIG = returnConfig();
+    // Check if the view is activated
     if(!$CONFIG['VIEW_ENABLE']) {
         header('Content-Type: application/json');
         header("{$_SERVER['SERVER_PROTOCOL']} 405 Method Not Allowed");
         echo json_encode(array('success' => false, 'error' => 'View is not enabled'));
         exit;
     }
-    detectLFI($fileName);
+
     require_once __DIR__ . '/../view/view.php';
-    $fullPath = $CONFIG['UPLOAD_DIR'] . $fileName;
-    view($fullPath);
+    $fileExtension = explode('.', $fileName)[1];
+    $fileName = explode('.', $fileName)[0];
+    // View the file
+    $dataFile = view($fileName, $fileExtension);
+    if(!$dataFile) {
+        header("{$_SERVER['SERVER_PROTOCOL']} 500 Internal Server Error");
+        header('Content-Type: application/json');
+        echo json_encode(array('success' => false, 'error' => 'No data returned'));
+        exit;
+    } else {
+        $httpCode = $dataFile[0];
+        $httpMessage = $dataFile[1];
+        header("{$_SERVER['SERVER_PROTOCOL']} $httpCode $httpMessage");
+        if ($httpCode === 200) {
+            $mimeTypes = $dataFile[2][0];
+            $filePath = $dataFile[2][1];
+            $isDownload = $dataFile[2][2];
+            if($isDownload) {
+                $fileName = pathinfo($filePath, PATHINFO_BASENAME);
+                header('Content-Type: application/octet-stream');
+                header('Content-Disposition: attachment; filename="' . $fileName . '"');
+            } else {
+                header('Content-Type: ' . $mimeTypes);
+            }
+            readfile($filePath);
+        } else {
+            $data = $dataFile[2];
+            header('Content-Type: application/json');
+            echo json_encode(array('success' => false, 'error' => "$data"));
+        }
+    }
 }
 
-function showWelcome(): void
+function getDeletion($fullName) : void
+{
+    /**
+     * Delete the file from the server
+     * @param string $fullName
+     * @return void
+     */
+    header('Content-Type: application/json');
+
+    $deleteKey = explode('/', $fullName)[1];
+    require_once __DIR__ . '/../deletion/deletion.php';
+    // Delete the file
+    $result = deletion($deleteKey);
+    if (!$result) {
+        header("{$_SERVER['SERVER_PROTOCOL']} 500 Internal Server Error");
+        echo json_encode(array('success' => false, 'error' => 'No data returned'));
+        exit;
+    } else {
+        $httpCode = $result[0];
+        $httpMessage = $result[1];
+        header("{$_SERVER['SERVER_PROTOCOL']} $httpCode $httpMessage");
+        if ($httpCode === 200) {
+            $data = $result[2];
+            echo json_encode(array('success' => true, 'data' => "$data"));
+        } else {
+            $data = $result[2];
+            echo json_encode(array('success' => false, 'error' => "$data"));
+        }
+    }
+}
+function showWelcome() : void
 {
     /**
      * Show the welcome page

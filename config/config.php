@@ -7,6 +7,21 @@ $CONFIG = [
      */
     'BEARER_TOKEN' =>  ["Bearer YWRtaW46YWRtaW4="], # default: "Bearer YWRtaW46YWRtaW4="
 
+    /**
+     * The database configuration.
+     * You can use by default sqlite
+     * If you want use mysql, you need to change type to mysql
+     * Only SQLite and MySQL are supported.
+     */
+    'DATABASE' => [
+        'type' => 'sqlite', # default: 'sqlite'
+        'location' => './../database/database.sqlite', # default: '/../db/database.sqlite' (only for sqlite)
+        'host' => 'localhost', # default: 'localhost' (only for mysql)
+        'user' => 'root', # default: 'root' (only for mysql)
+        'password' => 'root', # default: 'root' (only for mysql)
+        'database' => 'sharex' # default: 'sharex' (only for mysql)
+    ],
+
     /** If you want disable the upload on your ShareX server.
      * Replace the value of "UPLOAD_ENABLE" variable.
      * true => The server is enabled
@@ -28,7 +43,7 @@ $CONFIG = [
      * The base folder where the files will be uploaded.
      * WARNING / after the folder name is required.
      **/
-    'UPLOAD_DIR' => "../files/", # default: "../files/"
+    'UPLOAD_FOLDER' => "../files/", # default: "../files/"
 
     /**
      * The base URL where the files will be uploaded.
@@ -43,7 +58,7 @@ $CONFIG = [
 
     /**
      * The characters that will be used to generate the random string.
-     * WARNING: Addinc char: . or / or \ or % can be cause a LFI (Local File Inclusion) vulnerability.
+     * WARNING: Addinc char: . or / or \ or % or ' can be cause a LFI (Local File Inclusion) vulnerability.
      **/
     'ALL_USABLE_CHARS' => "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", # default: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
