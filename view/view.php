@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/./functions.php';
-function view($fileName, $fileExtension): void
+function view($fileName, $fileExtension): array
 {
     /**
      * View the file from the server
@@ -9,63 +9,48 @@ function view($fileName, $fileExtension): void
      * @return void
      */
     $CONFIG = returnConfig();
+    // verify if the file exists in the database
     $fileInDatabase = viewFromDatabase($fileName);
+    // if the file is not in the database
     if ($fileInDatabase[0] !== 200) {
-        header("{$_SERVER['SERVER_PROTOCOL']} $fileInDatabase[0] $fileInDatabase[1]");
-        header('Content-Type: application/json');
-        echo json_encode(array('success' => false, 'error' => $fileInDatabase[2]));
-        exit;
+        return $fileInDatabase;
     }
+    // get the extension from the database
     $extension = getExtensionFromDb($fileName);
+    // if the extension is not in the database
     if ($extension[0] !== 200) {
-        header("{$_SERVER['SERVER_PROTOCOL']} $extension[0] $extension[1]");
-        header('Content-Type: application/json');
-        echo json_encode(array('success' => false, 'error' => $extension[2]));
-        exit;
+        return $extension;
     }
-    if("$fileExtension" !== '' && "$fileExtension" !== null && "$fileExtension" !== "$extension[2]") {
-        header("{$_SERVER['SERVER_PROTOCOL']} 400 Bad Request");
-        header('Content-Type: application/json');
-        echo json_encode(array('success' => false, 'error' => 'File extension is not the same as the one in the database'));
-        exit;
+    // if the extension is specified and is not the same as the one in the database
+    if ("$fileExtension" !== '' && "$fileExtension" !== null && "$fileExtension" !== "$extension[2]") {
+        return [400, 'Bad Request', 'The extension is not the same as the one in the database'];
     }
     $fileName = $fileName . '.' . $extension[2];
     $filePath = $CONFIG['UPLOAD_FOLDER'] . $fileName;
+    // verify if the file exists in the server
     if (!file_exists($filePath)) {
-        header("{$_SERVER['SERVER_PROTOCOL']} 404 Not Found");
-        header('Content-Type: application/json');
-        echo json_encode(array('success' => false, 'error' => 'File not found'));
-        exit;
+        return [404, 'Not Found', 'File not found'];
     } else {
-        # get mime type
+            // get mime type
         $mime_type = mime_content_type($filePath);
-        // if the file is a image
+            // if the file is a image
         if (strpos($mime_type, 'image') !== false) {
-            header('Content-Type: ' . $mime_type);
-            readfile($filePath);
-            # if it's a video
+            return [200, 'OK', [$mime_type, $filePath, false]];
+            // if it's a video
         } elseif (strpos($mime_type, 'video') !== false) {
-            header('Content-Type: ' . $mime_type);
-            readfile($filePath);
-        } # if it's music
+            return [200, 'OK', [$mime_type,$filePath, false]];
+        } // if it's music
         elseif (strpos($mime_type, 'audio') !== false) {
-            header('Content-Type: ' . $mime_type);
-            readfile($filePath);
-        } # if it's a text file
+            return [200, 'OK', [$mime_type,$filePath, false]];
+        } // if it's a text file
         elseif (strpos($mime_type, 'text') !== false) {
-            header('Content-Type: ' . $mime_type);
-            readfile($filePath);
-        } # if it's a pdf
+            return [200, 'OK', [$mime_type,$filePath, false]];
+        } // if it's a pdf
         elseif (strpos($mime_type, 'pdf') !== false) {
-            header('Content-Type: ' . $mime_type);
-            readfile($filePath);
+            return [200, 'OK', [$mime_type,$filePath, false]];
+            // it's an other file
         } else {
-            # download the file
-            # remove the path from the file name
-            $fileName = pathinfo($filePath, PATHINFO_BASENAME);
-            header('Content-Type: application/octet-stream');
-            header('Content-Disposition: attachment; filename="' . $fileName . '"');
-            readfile($filePath);
+            return [200, 'OK', [$mime_type,$filePath, true]];
         }
     }
 }

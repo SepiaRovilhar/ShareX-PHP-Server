@@ -14,7 +14,7 @@ $CONFIG = [
      * Only SQLite and MySQL are supported.
      */
     'DATABASE' => [
-        'type' => 'mysql', # default: 'sqlite'
+        'type' => 'sqlite', # default: 'sqlite'
         'location' => './../database/database.sqlite', # default: '/../db/database.sqlite' (only for sqlite)
         'host' => 'localhost', # default: 'localhost' (only for mysql)
         'user' => 'root', # default: 'root' (only for mysql)

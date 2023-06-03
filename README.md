@@ -8,6 +8,9 @@ ShareX Server is an open-source web application for uploading and sharing images
 
 ## Requirements
 - PHP 7.2 or higher
+- MySQL database/ SQLite database
+- Rewrite module enabled
+- phpx.x-sqlite or phpx.x-mysql depending on your database type  (x is your php version)
 
 ## Installation
 1. Clone the repository

@@ -1,24 +1,29 @@
 <?php
 require_once (dirname(__FILE__) . '/../config/config.php');
 require_once (dirname(__FILE__) . '/functions.php');
-function deletion($deleter): array
+function deletion($deleteKey): array
 {
-    $nameValid = checkDeletion($deleter);
+    /**
+     * Delete a file
+     * @param string $deleteKey
+     * @return array
+     */
+    $nameValid = checkDeletion($deleteKey);
     if ($nameValid[0] !== 200) {
         return [$nameValid[0], $nameValid[1], $nameValid[2]];
     }
-    $exitInDb = checkExist($deleter);
+    $exitInDb = checkExist($deleteKey);
     if ($exitInDb[0] !== 200) {
         return [$exitInDb[0], $exitInDb[1], $exitInDb[2]];
     }
-    $file = returnNameAndExtention($deleter);
+    $file = returnNameAndExtention($deleteKey);
     if ($file[0] !== 200) {
         return [$file[0], $file[1], $file[2]];
     }
     $fileName = $file[2];
     $extension = $file[3];
 
-    $deleteStatus = deleteOnDatabase($deleter);
+    $deleteStatus = deleteOnDatabase($deleteKey);
     if ($deleteStatus[0] !== 200) {
         return [$deleteStatus[0], $deleteStatus[1], $deleteStatus[2]];
     }
