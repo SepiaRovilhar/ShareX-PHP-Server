@@ -15,7 +15,7 @@ function checkDatabaseSetup(): array
         $databaseLocation = $CONFIG['DATABASE']['location'];
         // If the database does not exist, create it
         if (!file_exists($databaseLocation)) {
-            touch($databaseLocation);
+            return [500, 'Internal Server', "The database not exist. Please create the database on the location $databaseLocation with the backup on database/database.backup and rename it to database.sqlite"];
         }
 
         $database = new SQLite3($databaseLocation);

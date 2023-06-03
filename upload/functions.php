@@ -31,7 +31,7 @@ function checkDatabaseSetup(): array
         $databaseLocation = $CONFIG['DATABASE']['location'];
         // If the database does not exist, create it
         if (!file_exists($databaseLocation)) {
-            touch($databaseLocation);
+            return [500, 'Internal Server', "The database not exist. Please create the database on the location $databaseLocation with the backup on database/database.backup and rename it to database.sqlite"];
         }
 
         $database = new SQLite3($databaseLocation);
@@ -99,6 +99,12 @@ function checkDatabaseSetup(): array
 
 function checkAvailability($key, $value): array
 {
+    /**
+     * Check if the key and the value are available
+     * @param string $key
+     * @param string $value
+     * @return array
+     */
     $CONFIG = returnConfig();
     // Check if the database is set up
     $setup = checkDatabaseSetup();
@@ -128,7 +134,7 @@ function checkAvailability($key, $value): array
             return [500, 'Internal Server', "The database connection failed"];
         }
         $query = $database->query("SELECT * FROM files WHERE $key='$value'");
-        $result = $query->fetchArray(SQLITE3_ASSOC);
+        $result = $query->fetchArray();
         if($result !== false){
             return [409, 'Conflict', 'The name is not available'];
         }
@@ -144,7 +150,7 @@ function checkAvailability($key, $value): array
             return [500, 'Internal Server', "The database connection failed: " . $database->connect_error];
         }
         $query = $database->query("SELECT * FROM files WHERE $key='$value'");
-        $result = $query->fetch_array(MYSQLI_ASSOC);
+        $result = $query->fetch_array();
         if($result !== null){
             return [409, 'Conflict', 'The name is not available'];
         }
@@ -156,6 +162,14 @@ function checkAvailability($key, $value): array
 
 function insertInDatabase($id, $delete, $extension, $date): array
 {
+    /**
+     * Insert the file in the database
+     * @param string $id
+     * @param string $delete
+     * @param string $extension
+     * @param string $date
+     * @return array
+     */
     $CONFIG = returnConfig();
     // Check if the database is set up
     $setup = checkDatabaseSetup();
@@ -197,8 +211,12 @@ function insertInDatabase($id, $delete, $extension, $date): array
     return [200, 'OK', 'The data has been inserted in the database'];
 }
 
-function uploadToDatabase()
+function uploadToDatabase(): array
 {
+    /**
+     * Upload the file to the database
+     * @return array
+     */
     $CONFIG = returnConfig();
     // Check if the database is set up
     $setup = checkDatabaseSetup();
